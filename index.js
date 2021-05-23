@@ -11,7 +11,7 @@ const app = express();
 const mongoClient = mongodb.MongoClient;
 const objectId = mongodb.ObjectID;
 const dbUrl = process.env.DB_URL || 'mongodb://localhost:27017'
-// const dbUrl="mongodb+srv://Banu:FGAO2wTeWzX3MjaL@cluster0.ldmgs.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+
 
 app.use(express.json());
 
