@@ -2,6 +2,7 @@ require ("dotenv").config();
 
 const express = require('express')
 const mongodb = require("mongodb")
+const cors = require('cors')
 
 
 const port = process.env.PORT || 3000
@@ -14,6 +15,7 @@ const dbUrl = process.env.DB_URL || 'mongodb://localhost:27017'
 
 
 app.use(express.json());
+app.use(cors())
 
 
 
