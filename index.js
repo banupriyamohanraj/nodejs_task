@@ -19,31 +19,31 @@ app.use(cors())
 
 
 
-// app.get("/", async (req, res) => {
-//     try {
-//         let client = await mongoClient.connect(dbUrl);
-//         let db = client.db("student");
-//         let data = await db.collection("student").find().toArray();
-//         if (data) {
-//             res.status(200).json(data)
-//         } else {
-//             res.status(404).json({ message: "no data found" })
-//         }
-//         client.close();
-//     }
-//     catch(error){
-//         console.log(error);
-//         res.status(500).json({message:"Internal server error"})
-//     }
-
-// });
-
-
-
-app.get("/", async (req, res) => {
+app.get("/student", async (req, res) => {
     try {
         let client = await mongoClient.connect(dbUrl);
-        let db = client.db("mentor");
+        let db = client.db("school");
+        let data = await db.collection("student").find().toArray();
+        if (data) {
+            res.status(200).json(data)
+        } else {
+            res.status(404).json({ message: "no data found" })
+        }
+        client.close();
+    }
+    catch(error){
+        console.log(error);
+        res.status(500).json({message:"Internal server error"})
+    }
+
+});
+
+
+
+app.get("/mentor", async (req, res) => {
+    try {
+        let client = await mongoClient.connect(dbUrl);
+        let db = client.db("school");
         let data = await db.collection("mentor").find().toArray();
         if (data) {
             res.status(200).json(data)
@@ -59,126 +59,139 @@ app.get("/", async (req, res) => {
 
 });
 
-app.listen(port, () => console.log(`port runs with ${port}`));
-//  //1.Write API to create Mentor
-// app.post("/create",async(req,res)=>{
-//     try {
-//         let client = await mongoClient.connect(dbUrl);
-//         let db = client.db("student");
-//         await db.collection("student").insertOne(req.body)
-//         res.status(200).json({message:"student created"})
-//         client.close();
-//     }
-//     catch(error){
-//         console.log(error);
-//         res.status(500).json({message:"Internal server error"})
-//     }
 
-// });
+ //1.Write API to create Mentor
+app.post("/createMentor",async(req,res)=>{
+    try {
+        let client = await mongoClient.connect(dbUrl);
+        let db = client.db("school");
+        await db.collection("mentor").insertOne(req.body)
+        res.status(200).json({message:"mentor created"})
+        client.close();
+    }
+    catch(error){
+        console.log(error);
+        res.status(500).json({message:"Internal server error"})
+    }
+
+});
 
 // //2.Write API to create Student
 
-// app.post("/create",async(req,res)=>{
-//     try {
-//         let client = await mongoClient.connect(dbUrl);
-//         let db = client.db("student");
-//         await db.collection("student").insertOne(req.body)
-//         res.status(200).json({message:"student created"})
-//         client.close();
-//     }
-//     catch(error){
-//         console.log(error);
-//         res.status(500).json({message:"Internal server error"})
-//     }
+app.post("/createStudent",async(req,res)=>{
+    try {
+        let client = await mongoClient.connect(dbUrl);
+        let db = client.db("school");
+        await db.collection("student").insertOne(req.body)
+        res.status(200).json({message:"student created"})
+        client.close();
+    }
+    catch(error){
+        console.log(error);
+        res.status(500).json({message:"Internal server error"})
+    }
 
-// });
-
-
-// //UPDATE
-
-// app.put("/update/:id",async(req,res)=>{
-
-//     try {
-//         let client = await mongoClient.connect(dbUrl);
-//         let db = client.db("student");
-//         await db.collection("student").findOneAndUpdate({_id:objectId(req.params.id)},{$set:req.body})
-//         res.status(200).json({message:"student updated"})
-//         client.close();
-//     }
-//     catch(error){
-//         console.log(error);
-//         res.status(500).json({message:"Internal server error"})
-//     }
-
-
-// });
-
-// //DELETE
-
-// app.delete("/delete/:id",async(req,res)=>{
-//     try {
-//         let client = await mongoClient.connect(dbUrl);
-//         let db = client.db("student");
-//         await db.collection("student").deleteOne({_id:objectId(req.params.id)})
-//         res.status(200).json({message:"student deleted"})
-//         client.close();
-//     }
-//     catch(error){
-//         console.log(error);
-//         res.status(500).json({message:"Internal server error"})
-//     }
+});
 
 
 
-// });
+// //3.Write API to Assign a student to Mentor
+app.put("/assign/:id",async(req,res)=>{
+    try {
+        let client = await mongoClient.connect(dbUrl);
+        let db = client.db("school");
+        console.log(req)
+        await db.collection("mentor").updateOne({_id:objectId(req.params.id)},{$push:req.body})
+        res.status(200).json({message:"new student assigned"})
+        client.close();
+        
+    }
+    catch(error){
+        console.log(error);
+        res.status(500).json({message:"Internal server error"})
+    }
+
+});
+
+// 3. Select one mentor and Add multiple Student 
+app.put("/assignMany/:id",async(req,res)=>{
+    try {
+        let client = await mongoClient.connect(dbUrl);
+        let db = client.db("school");
+        console.log(req)
+        await db.collection("mentor").update({_id:objectId(req.params.id)},{$addToSet:req.body})
+        res.status(200).json({message:"new student assigned"})
+        client.close();
+        
+    }
+    catch(error){
+        console.log(error);
+        res.status(500).json({message:"Internal server error"})
+    }
+
+});
+
+//4.Write API to Assign or Change Mentor for particular Student
+app.put("/change/:id/:newid",async(req,res)=>{
+    try {
+        let client = await mongoClient.connect(dbUrl);
+        let db = client.db("school");
+        console.log(req)
+        await db.collection("mentor").update({_id:objectId(req.params.id)},{$pull:req.body})
+        await db.collection("mentor").update({_id:objectId(req.params.newid)},{$addToSet:req.body})
+        res.status(200).json({message:"student has been removed and assined to different mentor"})
+        client.close();
+        
+    }
+    catch(error){
+        console.log(error);
+        res.status(500).json({message:"Internal server error"})
+    }
+
+});
+
+//4.Select One Student and Assign one Mentor
+app.put("/assignMentor/:id",async(req,res)=>{
+    try {
+        let client = await mongoClient.connect(dbUrl);
+        let db = client.db("school");
+        console.log(req)
+        await db.collection("student").updateOne({_id:objectId(req.params.id)},{$push:req.body})
+        res.status(200).json({message:"new mentor assigned"})
+        client.close();
+        
+    }
+    catch(error){
+        console.log(error);
+        res.status(500).json({message:"Internal server error"})
+    }
+
+});
+
+//5.Write API to show all students for a particular mentor
+app.get("/mentor/:id", async (req, res) => {
+    try {   
+        let client = await mongoClient.connect(dbUrl);
+        let db = client.db("school");
+        let data = await db.collection("mentor").find({_id:objectId(req.params.id)}).toArray();
+        if (data) {
+            res.status(200).json(data)
+        } else {
+            res.status(404).json({ message: "no data found" })
+        }
+        client.close();
+    }
+    catch(error){
+        console.log(error);
+        res.status(500).json({message:"Internal server error"})
+    }
+
+});
 
 
-// app.post("/assign/:id",async(req,res)=>{
-//     try {
-//         let client = await mongoClient.connect(dbUrl);
-//         let db = client.db("mentor");
-//         await db.collection("mentor").findOneAndUpdate({_id:objectId(req.params.id)},{$set:req.body})
-//         res.status(200).json({message:"student assigned"})
-//         client.close();
-//     }
-//     catch(error){
-//         console.log(error);
-//         res.status(500).json({message:"Internal server error"})
-//     }
-
-// });
-
-// app.put("/assign/:id",async(req,res)=>{
-//     try {
-//         let client = await mongoClient.connect(dbUrl);
-//         let db = client.db("mentor");
-//         await db.collection("mentor").update({_id:objectId(req.params.id)},{$push:req.body})
-//         res.status(200).json({message:"new student assigned"})
-//         client.close();
-//     }
-//     catch(error){
-//         console.log(error);
-//         res.status(500).json({message:"Internal server error"})
-//     }
-
-// });
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+app.listen(port, () => console.log(`port runs with ${port}`));
 
 
 
